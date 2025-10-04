@@ -1,6 +1,11 @@
 import { MortyBase } from "./MortyBase";
 import { FairRandom } from "./FairRandom";
 
+export interface chooseBoxesToKeepResult {
+  kept: number[];
+  reveal: () => void;
+}
+
 export class ClassicMorty extends MortyBase {
   name = "ClassicMorty";
 
@@ -8,7 +13,7 @@ export class ClassicMorty extends MortyBase {
     console.log(
       `Morty: ${this.name} is picking a hiding place (provably fair).`
     );
-    return fairRandom.generateFairInt(range, "hiding box");
+    return fairRandom.generateFairInt(range, "hiding box").final;
   }
 
   chooseBoxesToKeep(
@@ -16,26 +21,27 @@ export class ClassicMorty extends MortyBase {
     gunIndex: number,
     range: number,
     fairRandom: typeof FairRandom
-  ): number[] {
+  ): chooseBoxesToKeepResult {
     console.log(`Morty: Deciding which ${range - 2} boxes to remove...`);
     if (initialPick !== gunIndex) {
-      console.log(
-        "Morty: Since Rick's guess is wrong, I'll keep his box and the box with the gun."
-      );
-      return [initialPick, gunIndex].sort((a, b) => a - b);
+      return {
+        kept: [initialPick, gunIndex].sort((a, b) => a - b),
+        reveal: () => {},
+      };
     } else {
-      console.log(
-        "Morty: Since Rick guessed correctly, I'll pick one other box fairly to keep (so it looks random)."
-      );
-      const pick = fairRandom.generateFairInt(
+      const resAndPick = fairRandom.generateFairInt(
         range - 1,
         "keeper index (excluding initial)"
       );
+      const pick = resAndPick.final;
       let idx = 0;
       for (let i = 0; i < range; i++) {
         if (i === initialPick) continue;
         if (idx === pick) {
-          return [initialPick, i].sort((a, b) => a - b);
+          return {
+            kept: [initialPick, i].sort((a, b) => a - b),
+            reveal: resAndPick.reveal,
+          };
         }
         idx++;
       }

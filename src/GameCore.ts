@@ -22,7 +22,8 @@ export class GameCore {
     let playing = true;
 
     while (playing) {
-      const gunIndex = FairRandom.generateFairInt(this.n, "hiding box");
+      const gunData = FairRandom.generateFairInt(this.n, "hiding box");
+      const gunIndex = gunData.final;
 
       let guessStr = readlineSync.question(
         `Morty: Okay, I hid the gun. What's your guess [0,${this.n})? `
@@ -35,12 +36,13 @@ export class GameCore {
         guess = Number(guessStr);
       }
 
-      const boxesKept = this.morty.chooseBoxesToKeep(
+      const boxesKeptData = this.morty.chooseBoxesToKeep(
         guess,
         gunIndex,
         this.n,
         FairRandom
       );
+      const boxesKept = boxesKeptData.kept;
       if (!boxesKept || boxesKept.length !== 2) {
         throw new Error("Morty must return exactly two boxes to keep.");
       }
@@ -69,6 +71,8 @@ export class GameCore {
       const finalBox = switched ? boxesKept.find((b) => b !== guess)! : guess;
 
       console.log(`Morty: Aww man, my hiding index was ${gunIndex}.`);
+      gunData.reveal();
+      boxesKeptData.reveal();
       if (finalBox === gunIndex) {
         console.log("Morty: Aww man, you won, Rick!");
       } else {

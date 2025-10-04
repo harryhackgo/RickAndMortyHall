@@ -1,3 +1,4 @@
+import { chooseBoxesToKeepResult } from "./ClassicMorty";
 import { FairRandom } from "./FairRandom";
 
 export abstract class MortyBase {
@@ -10,7 +11,7 @@ export abstract class MortyBase {
     gunIndex: number,
     range: number,
     fairRandom: typeof FairRandom
-  ): number[];
+  ): chooseBoxesToKeepResult;
 
   abstract calculateProbabilities(range: number): {
     stay: number;
